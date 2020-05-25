@@ -140,7 +140,8 @@ memcmp	proc
 	mov al, byte ptr es:[di]
 	mov dl, byte ptr ds:[si]
 	sub al, dl
-	
+	mov ah, al	
+
 	pop cx
 	popf
 	ret
@@ -280,7 +281,45 @@ endp
 ;	ax - addr of first occurance of str2 in str1 or 0
 ;---------------------------------------------------;
 strstr	proc
+	pushf
+	cld
+	push cx dx
 
+	push es di
+	mov ax, ds
+	mov es, ax
+	mov di, si
+	call strlen
+	pop di es
+
+	mov dx, ax	;dx = len(s2)
+
+strstr_loop:
+
+	push si
+	mov si, word ptr ds:[si]
+	call strchr
+	pop si
+
+	cmp ax, 0
+	je strstr_not_found
+
+	mov di, ax
+	push di si
+	call memcmp
+	pop si di
+
+	cmp ax, 0
+	je strstr_found
+
+	inc di
+	jmp strstr_loop
+
+strstr_found:
+	mov ax, di
+strstr_not_found:
+	pop cx dx
+	popf
 	ret
 endp
 
