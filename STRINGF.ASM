@@ -1,4 +1,6 @@
 .model tiny
+.data
+Msg db "Hello world"
 .code
 org 100h
 
@@ -82,14 +84,30 @@ endp
 ;	ax - addr search_value occurance
 ;---------------------------------------------------;
 memchr	proc
+	pushf
 	push cx
 
 	mov cx, dx
 	mov ax, si 
 	repne scasb	; cx times : cmp until meet
+	jne not_found
 
-	mov di, ax
+	pushf
+	pop ax
+	xor ax, 400h
+	push ax
+	popf
+
+	scasb		; dec di in dir
+
+	
+	mov ax, di
+	jmp found
+not_found:
+	mov ax, 0
+found:
 	pop cx
+	popf
 	ret
 endp
 
@@ -105,16 +123,26 @@ endp
 ;	ax - cmp_result if <0 -> 1 < 2; >0 -> 1 > 2; =0 -> 1 === 2
 ;---------------------------------------------------;
 memcmp	proc
+	pushf
 	push cx
 
 	mov cx, dx
-	repne cmpsb	; cx times : cmp until not equal
+	repe cmpsb	; cx times : cmp until not equal
+
+	pushf
+	pop ax
+	xor ax, 400h
+	push ax
+	popf
+	cmpsb
+
 
 	mov al, byte ptr es:[di]
 	mov dl, byte ptr ds:[si]
 	sub al, dl
 	
 	pop cx
+	popf
 	ret
 endp
 
