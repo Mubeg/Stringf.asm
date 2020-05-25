@@ -185,68 +185,77 @@ endp
 
 ;---------------------------------------------------;
 ;In
-;	es - seg addr
-;	di - addr
-;	si - search_value
+;	ds - seg addr
+;	di - search_value
+;	si - addr
 ;Out	
 ;	ax - addr of first occurance of value in string or 0
 ;---------------------------------------------------;
 strchr	proc
+	pushf
+	cld
+	push dx
 
-	mov ax, si
+	mov dx, di
 
 strchr_loop:
 
-	cmp byte ptr es:[di], 0
+	lodsb
+	cmp al, 0
 	je strchr_not_found
 
-	cmp byte ptr es:[di], al
+	cmp al, dl
 	je strchr_loop_end
 
-	inc di
 	jmp strchr_loop
 
 strchr_loop_end:
-	mov ax, di
+	mov ax, si
+	dec ax
 	jmp strchr_found	
 
 strchr_not_found:
 	mov ax, 0
 strchr_found:
 
+	pop dx
+	popf
 	ret
 endp
 
 ;---------------------------------------------------;
 ;In
-;	es - seg addr
-;	di - addr
-;	si - search_value
+;	ds - seg addr
+;	si - addr
+;	di - search_value
 ;Out	
 ;	ax - addr of last occurance of value in string or 0
 ;---------------------------------------------------;
 strrchr proc
+	pushf
+	cld
 	push cx
 
-	mov cx, si
+	mov cx, di
 	mov ax, 0
 
 strrchr_loop:
 
-	cmp byte ptr es:[di], 0
+	lodsb
+	cmp al, 0
 	je strrchr_loop_end
 
-	cmp byte ptr es:[di], cl
+	cmp al, cl
 	jne strrchr_next
-	mov ax, di
+	mov ax, si
 
 strrchr_next:
-	inc di
 	jmp strrchr_loop
 
 strrchr_loop_end:
 
 	pop cx
+	popf
 	ret
 endp
 
@@ -262,20 +271,21 @@ endp
 strcpy	proc
 	pushf
 	cld
-
-	mov ax, di
+	push di
 
 strcpy_loop:
 
-	cmp byte ptr ds:[si], 0
+	lodsb
+	cmp al, 0
 	je strcpy_loop_end
 
-	movsb
+	stosb
 	jmp strcpy_loop
 
 strcpy_loop_end:
 	mov byte ptr es:[di], 0h
 	
+	pop ax
 	popf
 	ret
 endp
