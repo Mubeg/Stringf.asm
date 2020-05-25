@@ -11,7 +11,7 @@ public memcmp
 public strlen 
 public strchr 
 public strrchr 
-public strcp 
+public strcpy
 public strstr
 
 
@@ -21,7 +21,7 @@ start:
 
 ;---------------------------------------------------;
 ;In
-;	dir flag - for direction cld = address inc, std = address dec
+;	dir flag - for direction
 ;	es - offset string segment
 ;	di - offset string intersegment
 ;	si - set_value (only lower byte is used)
@@ -146,26 +146,139 @@ memcmp	proc
 	ret
 endp
 
-strlen	proc
 
+
+;---------------------------------------------------;
+;In
+;	es - seg addr
+;	di - addr
+;Out	
+;	ax - num of bytes
+;---------------------------------------------------;
+strlen	proc
+	pushf
+	push cx
+	cld	; dir flag = 0
+
+	mov ax, 0h
+	mov cx, 0ffffh		; seg size - 'max' size
+
+	repne scasb
+
+	mov ax, 0fffeh
+	sub ax, cx
+
+	pop cx
+	popf
 	ret
 endp
 
+;---------------------------------------------------;
+;In
+;	es - seg addr
+;	di - addr
+;	si - search_value
+;Out	
+;	ax - addr of first occurance of value in string or 0
+;---------------------------------------------------;
 strchr	proc
 
+	mov ax, si
+
+strchr_loop:
+
+	cmp byte ptr es:[di], 0
+	je strchr_not_found
+
+	cmp byte ptr es:[di], al
+	je strchr_loop_end
+
+	inc di
+	jmp strchr_loop
+
+strchr_loop_end:
+	mov ax, di
+	jmp strchr_found	
+
+strchr_not_found:
+	mov ax, 0
+strchr_found:
+
 	ret
 endp
 
+;---------------------------------------------------;
+;In
+;	es - seg addr
+;	di - addr
+;	si - search_value
+;Out	
+;	ax - addr of last occurance of value in string or 0
+;---------------------------------------------------;
 strrchr proc
+	push cx
 
+	mov cx, si
+	mov ax, 0
+
+strrchr_loop:
+
+	cmp byte ptr es:[di], 0
+	je strrchr_loop_end
+
+	cmp byte ptr es:[di], cl
+	jne strrchr_next
+	mov ax, di
+
+strrchr_next:
+	inc di
+	jmp strrchr_loop
+
+strrchr_loop_end:
+
+	pop cx
 	ret
 endp
 
-strcp	proc
+;---------------------------------------------------;
+;In
+;	es - seg addr dest
+;	di - addr dest
+;	ds - seg addr source
+;	si - addr source
+;Out
+;	ax - addr dest
+;---------------------------------------------------;
+strcpy	proc
+	pushf
+	cld
 
+	mov ax, di
+
+strcpy_loop:
+
+	cmp byte ptr ds:[si], 0
+	je strcpy_loop_end
+
+	movsb
+	jmp strcpy_loop
+
+strcpy_loop_end:
+	mov byte ptr es:[di], 0h
+	
+	popf
 	ret
 endp
 
+;---------------------------------------------------;
+;In
+;	es - seg addr 1
+;	di - addr 1
+;	ds - seg addr 2
+;	si - addr 2
+;Out
+;	ax - addr of first occurance of str2 in str1 or 0
+;---------------------------------------------------;
 strstr	proc
 
 	ret
