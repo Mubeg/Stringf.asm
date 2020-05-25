@@ -137,8 +137,19 @@ memcmp	proc
 
 	mov al, byte ptr es:[di]
 	mov dl, byte ptr ds:[si]
-	sub al, dl
-	mov ah, al	
+	cmp al, dl
+	je memcmp_equal
+	jb memcmp_below
+	mov ax, 01h
+	jmp memcmp_done
+
+memcmp_below:
+	mov ah, 0FFh
+	jmp memcmp_done
+memcmp_equal:
+	mov ax, 0h
+
+memcmp_done:
 
 	pop cx
 	popf
