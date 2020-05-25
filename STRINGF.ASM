@@ -1,6 +1,4 @@
 .model tiny
-.data
-Msg db "Hello world"
 .code
 org 100h
 
