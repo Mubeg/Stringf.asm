@@ -8,6 +8,7 @@ public memchr
 public memcmp 
 public strlen 
 public strchr 
+public str2chr 
 public strrchr 
 public strcpy
 public strstr
@@ -220,6 +221,48 @@ strchr_found:
 
 	pop dx
 	popf
+	ret
+endp
+
+
+;---------------------------------------------------;
+;In
+;	ds - seg addr
+;	bx - first search_value
+;	si - addr
+	cx - second search_value
+;Out	
+;	ax - addr of first occurance of value in string or 0
+;	bx - found_value
+;DESTROYED ax bx
+;---------------------------------------------------;
+str2chr	proc
+
+
+str2chr_loop:
+
+	lodsb
+	cmp al, 0
+	je str2chr_not_found
+
+	cmp al, bl
+	je str2chr_loop_end_1
+	cmp al, cl
+	je str2chr_loop_end_2
+
+	jmp str2chr_loop
+
+str2chr_loop_end_2:
+	mov bx, cx
+str2chr_loop_end_1:
+	mov ax, si
+	dec ax
+	jmp strchr_found	
+
+str2chr_not_found:
+	mov ax, 0
+str2chr_found:
+
 	ret
 endp
 
