@@ -76,7 +76,7 @@ endp
 
 
 ;---------------------------------------------------;
-;Memcpy but add attribute after each copied symbol
+;Memcpy but add attribute after each copied symbol for graphics
 ;In
 ;	dir flag - direction
 ;	es - seg addr dest
@@ -89,18 +89,27 @@ endp
 ;	ax - addr dest
 ;---------------------------------------------------;
 memcpy_add_attr	proc
-	push di cx
+	push di cx bx dx
 
 	mov cx, dx
+	mov bh, al		; color
+
 	cmp cx, 0
 	je loop_MAZ_end
 loop_MAZ:
+	cmp di, 4000
+	jl no_scroll_MAZ
+	call do_scroll_or_not
+	
+no_scroll_MAZ:
 	movsb
 	stosb
+
+	inc dx
 	loop loop_MAZ
-	
+
 loop_MAZ_end:
-	pop cx ax
+	pop dx bx cx ax
 	ret
 endp
 
@@ -367,7 +376,7 @@ endp
 
 
 ;---------------------------------------------------;
-;strcpy but add attribute after each symbol
+;strcpy but add attribute after each symbol for graphics
 ;In
 ;	es - seg addr dest
 ;	di - addr dest
@@ -386,7 +395,10 @@ strcpy_loop_AZ:
 	lodsb
 	cmp al, 0
 	je strcpy_loop_end_AZ
-
+	cmp di, 4000
+	jl no_call_AZ
+	call do_scroll_or_not
+no_call_AZ:
 	stosw
 	jmp strcpy_loop_AZ
 
@@ -450,6 +462,24 @@ strstr_not_found:
 	pop cx dx
 	popf
 	ret
+endp
+
+do_scroll_or_not proc
+
+	cmp di, 4000
+	jl no_scroll
+	push ax cx dx
+	mov ah, 06h
+	mov al, 01h
+	mov dx, 0000h
+	mov ch, 24
+	mov cl, 79
+	int 10h
+	pop dx cx ax
+	sub di, 160
+no_scroll:
+
+ret
 endp
 
 end 	start
