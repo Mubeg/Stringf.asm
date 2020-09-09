@@ -471,9 +471,9 @@ do_scroll_or_not proc
 	push ax cx dx
 	mov ah, 06h
 	mov al, 01h
-	mov dx, 0000h
-	mov ch, 24
-	mov cl, 79
+	mov cx, 0000h
+	mov dh, 24
+	mov dl, 79
 	int 10h
 	pop dx cx ax
 	sub di, 160
