@@ -4,6 +4,7 @@ org 100h
 
 public memset 
 public memcpy 
+public memcpy_add_attr 
 public memchr 
 public memcmp 
 public strlen 
@@ -11,6 +12,7 @@ public strchr
 public str2chr 
 public strrchr 
 public strcpy
+public strcpy_add_attr
 public strstr
 
 
@@ -68,6 +70,36 @@ memcpy	proc
 even_byte_num_mcp:
 	shr cx, 1h
 	rep movsw
+	pop cx ax
+	ret
+endp
+
+
+;---------------------------------------------------;
+;Memcpy but add attribute after each copied symbol
+;In
+;	dir flag - direction
+;	es - seg addr dest
+;	di - addr dest
+;	ds - seg addr source
+;	si - addr source
+;	dx - size
+;	al - attribute to add after symbol
+;Out
+;	ax - addr dest
+;---------------------------------------------------;
+memcpy_add_attr	proc
+	push di cx
+
+	mov cx, dx
+	cmp cx, 0
+	je loop_MAZ_end
+loop_MAZ:
+	movsb
+	stosb
+	loop loop_MAZ
+	
+loop_MAZ_end:
 	pop cx ax
 	ret
 endp
@@ -230,7 +262,7 @@ endp
 ;	ds - seg addr
 ;	bx - first search_value
 ;	si - addr
-	cx - second search_value
+;	cx - second search_value
 ;Out	
 ;	ax - addr of first occurance of value in string or 0
 ;	bx - found_value
@@ -257,7 +289,7 @@ str2chr_loop_end_2:
 str2chr_loop_end_1:
 	mov ax, si
 	dec ax
-	jmp strchr_found	
+	jmp str2chr_found	
 
 str2chr_not_found:
 	mov ax, 0
@@ -332,6 +364,41 @@ strcpy_loop_end:
 	popf
 	ret
 endp
+
+
+;---------------------------------------------------;
+;strcpy but add attribute after each symbol
+;In
+;	es - seg addr dest
+;	di - addr dest
+;	ds - seg addr source
+;	si - addr source
+;	ah - attribute to add after symbol
+;Out
+;	ax - addr dest
+;---------------------------------------------------;
+strcpy_add_attr	proc
+
+	push di
+
+strcpy_loop_AZ:
+
+	lodsb
+	cmp al, 0
+	je strcpy_loop_end_AZ
+
+	stosw
+	jmp strcpy_loop_AZ
+
+strcpy_loop_end_AZ:
+
+	mov al, 0h
+	stosw
+	
+	pop ax
+	ret
+endp
+
 
 ;---------------------------------------------------;
 ;In
