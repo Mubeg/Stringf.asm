@@ -2,6 +2,9 @@
 .code
 org 100h
 
+screen_width = 80
+height = 25
+
 public memset 
 public memcpy 
 public memcpy_add_attr 
@@ -466,17 +469,17 @@ endp
 
 do_scroll_or_not proc
 
-	cmp di, 4000
+	cmp di, screen_width*height*2
 	jl no_scroll
 	push ax cx dx
 	mov ah, 06h
 	mov al, 01h
 	mov cx, 0000h
-	mov dh, 24
-	mov dl, 79
+	mov dh, height - 1
+	mov dl, screen_width - 1
 	int 10h
 	pop dx cx ax
-	sub di, 160
+	sub di, screen_width*2
 no_scroll:
 
 ret
